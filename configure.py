@@ -11,7 +11,7 @@ for variable in os.environ:
 if configuration:
     header ="""\
 [buildout]
-extends=base.cfg
+extends = base.cfg
 
 [zeoserver]
 """
