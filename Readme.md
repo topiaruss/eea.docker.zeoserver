@@ -118,6 +118,11 @@ As mentioned above, the supported environment variables are derived from the con
 from the [recipe](https://pypi.python.org/pypi/plone.recipe.zeoserver). For example, `read-only`
 becomes `BUILDOUT_READ_ONLY` and `zeo-address` becomes `BUILDOUT_ZEO_ADDRESS`.
 
+For variables that support a list of values (such as `eggs`, for example), separe them by space, as
+in `BUILDOUT_EGGS="zc.async ZopeUndo"`.
+
+Besides the variables supported by the `zeoserver` recipe, you can also use `INDEX` and `FIND_LINKS`
+that extend the `[buildout]` tag.
 
 ## Copyright and license
 
