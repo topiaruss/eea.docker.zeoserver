@@ -1,6 +1,7 @@
-## Zeoserver Docker image
+## Zeoserver ready to run Docker image
 
- - HAProxy 1.5.14
+Docker image for ZEO server with `plone.recipe.zeoserver` full support
+(supports all plone.recipe.zeoserver options as docker environment variables).
 
 This image is generic, thus you can obviously re-use it within
 your non-related EEA projects.
@@ -27,7 +28,8 @@ your non-related EEA projects.
 
 ## Usage
 
-Most of the configuration of this image is based on the [plone.recipe.zeoserver](https://pypi.python.org/pypi/plone.recipe.zeoserver)
+Most of the configuration of this image is based on the 
+[plone.recipe.zeoserver](https://pypi.python.org/pypi/plone.recipe.zeoserver)
 recipe package so it is advised that you check it out.
 
 ### Run with basic configuration
@@ -84,7 +86,7 @@ a rebuild at start and might cause a few seconds of delay.
 
 You are able to start a container with your custom `buildout` configuration with the mention
 that it must be mounted at `/opt/zeoserver/buildout.cfg` inside the container. Keep in mind
-that this option will trigget a rebuild at start and might cause delay, based on your
+that this option will trigger a rebuild at start and might cause delay, based on your
 configuration. It is unadvised to use this option to install many packages, because they will
 have to be reinstalled every time a container is created.
 
