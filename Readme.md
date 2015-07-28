@@ -106,8 +106,51 @@ and then run
 
    $ docker build -t your-image-name:your-image-tag path/to/Dockerfile
 
+## Persistent data as you wish
 
-### Upgrade
+The `zeoserver` data is kept in a [data-only container](https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e).
+The `data` container keeps the persistent data for a production environment and must be backed up. If you are running in a devel environment,
+you can skip the backup and delete the container if you want.
+
+If you have a Data.fs file for your application, you can add it to the `data` container with the following
+command:
+
+    $ docker run --rm --volumes-from <name_of_your_data_container> \
+      -v /path/to/parent/directory/of/Data.fs/file:/mnt:ro \
+      debian /bin/bash -c "cp /mnt/Data.fs /opt/zeoserver/var/filestorage && \
+      chown -R 500:500 /opt/zeoserver/var/filestorage"
+
+The command above creates a bare `debian` container using the persistent volumes of your data container.
+The parent directory of the `Data.fs` file is mounted as a `read-only` volume in `/mnt`, from where the
+`Data.fs` file is copied to the filestorage directory you are going to use (default `/opt/zeoserver/var/filestorage`).
+The `data` container must have this directory marked as a volume, so it can be used by the `zeoserver` container,
+with a command like:
+
+    $ docker run --volumes-from <name_of_your_data_container> eeacms/zeoserver
+
+The volumes from the `data` container will overwrite the contents of the directories inside the `zeoserver`
+container, in a similar way in which the `mount` command works. So, for example, if your data container
+has `/opt/zeoserver/var/filestorage` marked as a volume, running the above command will overwrite the
+contents of that folder in the `zeoserver` with whatever there is in the `data` container.
+
+The data container can also be easily [copied, moved and be reused between different environments](https://docs.docker.com/userguide/dockervolumes/#backup-restore-or-migrate-data-volumes).
+
+### Docker-compose example
+
+A `docker-compose.yml` file for `zeoserver` using a `data` container:
+
+    data:
+      build: data
+      volumes:
+       - /opt/zeoserver/var/filestorage
+
+    zeoserver:
+      image: eeacms/zeoserver:latest
+      user: "500"
+      volumes_from:
+       - data
+
+## Upgrade
 
     $ docker pull eeacms/zeoserver:latest
 
