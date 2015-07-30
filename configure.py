@@ -8,6 +8,7 @@ configuration = ""
 extra_buildout_configuration = ""
 
 list_type = ["eggs", "extra-paths", "relative-paths"]
+conf_type = ['zeo-log-custom', 'zeo-conf-additional']
 
 for variable in os.environ:
     if "BUILDOUT_" not in variable:
@@ -16,6 +17,10 @@ for variable in os.environ:
     if tag in list_type:
         configuration += "%s =\n" % tag
         for value in os.environ[variable].strip('"\'').split():
+            configuration += "\t%s\n" % value
+    elif tag in conf_type:
+        configuration += "%s =\n" % tag
+        for value in os.environ[variable].strip('"\'').split('\\n'):
             configuration += "\t%s\n" % value
     else:
         configuration += "%s = %s\n" % (tag, os.environ[variable].strip('"\''))
