@@ -1,17 +1,17 @@
 FROM centos:centos7
-
 MAINTAINER "Razvan Chitu" <razvan.chitu@eaudeweb.ro>
+MAINTAINER "Alin Voinea" <alin.voinea@eaudeweb.ro>
 
 ENV ZEO_HOME=/opt/zeoserver
 
-RUN yum updateinfo -y && \
-    yum install -y epel-release && \
-    yum install -y make && \
-    yum install -y gcc && \
-    yum install -y gcc-c++ && \
-    yum install -y python && \
-    yum install -y python-devel && \
-    yum install -y python-pip && \
+RUN yum updateinfo && \
+    yum install -y \
+        make \
+        gcc \
+        gcc-c++ \
+        python \
+        python-devel && \
+    yum clean all && \
     mkdir -p $ZEO_HOME
 
 COPY base.cfg           $ZEO_HOME/base.cfg
