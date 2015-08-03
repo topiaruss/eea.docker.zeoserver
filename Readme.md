@@ -60,7 +60,7 @@ Environment variables can be supplied either via an `env_file` with the `--env-f
 
 or via the `--env` flag
 
-    $ docker run --env BUILDOUT_ZEO_ADDRESS="8080" eeacms/zeoserver:latest
+    $ docker run --env BUILDOUT_ZEO_ADDRESS="80" eeacms/zeoserver:latest
 
 It is **very important** to know that the environment variables supplied are translated
 into buildout configuration. For each variable with the prefix `BUILDOUT_` there will be
@@ -96,11 +96,10 @@ have to be reinstalled every time a container is created.
 Additionaly, in case you need to considerably change the base configuration of this image,
 you can extend it with your configuration. You can write Dockerfile like this
 
-    FROM eeacms/zeoserver:latest
-    # Add your configuration file
-    COPY path/to/configuration/file /opt/zeoserver/base.cfg
-    # Rebuild
-    RUN /opt/zeoserver/bin/buildout /opt/zeoserver/base.cfg
+    FROM eeacms/zeoserver
+
+    COPY custom.cfg /opt/zeoserver/base.cfg
+    RUN bin/buildout -c base.cfg
 
 and then run
 
@@ -117,10 +116,10 @@ command:
 
     $ docker run --rm --volumes-from <name_of_your_data_container> \
       -v /path/to/parent/directory/of/Data.fs/file:/mnt:ro \
-      debian /bin/bash -c "cp /mnt/Data.fs /opt/zeoserver/var/filestorage && \
+      busybox /bin/sh -c "cp /mnt/Data.fs /opt/zeoserver/var/filestorage && \
       chown -R 500:500 /opt/zeoserver/var/filestorage"
 
-The command above creates a bare `debian` container using the persistent volumes of your data container.
+The command above creates a bare `busybox` container using the persistent volumes of your data container.
 The parent directory of the `Data.fs` file is mounted as a `read-only` volume in `/mnt`, from where the
 `Data.fs` file is copied to the filestorage directory you are going to use (default `/opt/zeoserver/var/filestorage`).
 The `data` container must have this directory marked as a volume, so it can be used by the `zeoserver` container,
@@ -139,16 +138,16 @@ The data container can also be easily [copied, moved and be reused between diffe
 
 A `docker-compose.yml` file for `zeoserver` using a `data` container:
 
-    data:
-      build: data
-      volumes:
-       - /opt/zeoserver/var/filestorage
-
     zeoserver:
       image: eeacms/zeoserver:latest
       user: "500"
       volumes_from:
        - data
+
+    data:
+      build: data
+      volumes:
+       - /opt/zeoserver/var/filestorage
 
 ## Upgrade
 
