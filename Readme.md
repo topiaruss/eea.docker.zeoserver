@@ -34,7 +34,7 @@ recipe package so it is advised that you check it out.
 
 ### Run with basic configuration
 
-    $ docker run eeacms/zeoserver:latest
+    $ docker run eeacms/zeoserver
 
 The image is built using a bare `buildout.cfg` file:
 
@@ -56,11 +56,11 @@ by the recipe, such as listening on `port 8100`.
 
 Environment variables can be supplied either via an `env_file` with the `--env-file` flag
     
-    $ docker run --env-file zeoserver.env eeacms/zeoserver:latest
+    $ docker run --env-file zeoserver.env eeacms/zeoserver
 
 or via the `--env` flag
 
-    $ docker run --env BUILDOUT_ZEO_ADDRESS="80" eeacms/zeoserver:latest
+    $ docker run --env BUILDOUT_ZEO_ADDRESS="80" eeacms/zeoserver
 
 It is **very important** to know that the environment variables supplied are translated
 into buildout configuration. For each variable with the prefix `BUILDOUT_` there will be
@@ -82,7 +82,7 @@ a rebuild at start and might cause a few seconds of delay.
 
 ### Use a custom configuration file mounted as a volume
 
-    $ docker run -v /path/to/your/configuration/file:/opt/zeoserver/buildout.cfg eeacms/zeoserver:latest
+    $ docker run -v /host/path/to/buildout.cfg:/opt/zeoserver/buildout.cfg eeacms/zeoserver
 
 You are able to start a container with your custom `buildout` configuration with the mention
 that it must be mounted at `/opt/zeoserver/buildout.cfg` inside the container. Keep in mind
@@ -93,7 +93,7 @@ have to be reinstalled every time a container is created.
 
 ### Extend the image with a custom configuration file
 
-Additionaly, in case you need to considerably change the base configuration of this image,
+Additionally, in case you need to considerably change the base configuration of this image,
 you can extend it with your configuration. You can write Dockerfile like this
 
     FROM eeacms/zeoserver
@@ -103,21 +103,24 @@ you can extend it with your configuration. You can write Dockerfile like this
 
 and then run
 
-   $ docker build -t your-image-name:your-image-tag path/to/Dockerfile
+   $ docker build -t zeoserver:custom .
 
 ## Persistent data as you wish
 
-The `zeoserver` data is kept in a [data-only container](https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e).
-The `data` container keeps the persistent data for a production environment and must be backed up. If you are running in a devel environment,
-you can skip the backup and delete the container if you want.
+For production use, in order to avoid data loss we advise you to keep your Data.fs and blobs within
+a [data-only container](https://medium.com/@ramangupta/why-docker-data-containers-are-good-589b3c6c749e).
+The `data` container keeps the persistent data for a production environment and must be backed up.
+If you are running in a devel environment, you can skip the backup and delete the container if you want.
 
 If you have a Data.fs file for your application, you can add it to the `data` container with the following
 command:
 
-    $ docker run --rm --volumes-from <name_of_your_data_container> \
-      -v /path/to/parent/directory/of/Data.fs/file:/mnt:ro \
-      busybox /bin/sh -c "cp /mnt/Data.fs /opt/zeoserver/var/filestorage && \
-      chown -R 500:500 /opt/zeoserver/var/filestorage"
+    $ docker run --rm \
+        --volumes-from my_data_container \
+        --volume /host/path/to/Data.fs:/restore:ro \
+        busybox \
+          /bin/sh -c "cp /restore/Data.fs /opt/zeoserver/var/filestorage/ && \
+          chown -R 500:500 /opt/zeoserver/var/filestorage"
 
 The command above creates a bare `busybox` container using the persistent volumes of your data container.
 The parent directory of the `Data.fs` file is mounted as a `read-only` volume in `/mnt`, from where the
@@ -125,7 +128,7 @@ The parent directory of the `Data.fs` file is mounted as a `read-only` volume in
 The `data` container must have this directory marked as a volume, so it can be used by the `zeoserver` container,
 with a command like:
 
-    $ docker run --volumes-from <name_of_your_data_container> eeacms/zeoserver
+    $ docker run --volumes-from my_data_container eeacms/zeoserver
 
 The volumes from the `data` container will overwrite the contents of the directories inside the `zeoserver`
 container, in a similar way in which the `mount` command works. So, for example, if your data container
@@ -139,19 +142,20 @@ The data container can also be easily [copied, moved and be reused between diffe
 A `docker-compose.yml` file for `zeoserver` using a `data` container:
 
     zeoserver:
-      image: eeacms/zeoserver:latest
-      user: "500"
+      image: eeacms/zeoserver
       volumes_from:
-       - data
+      - data
 
     data:
-      build: data
+      image: busybox
       volumes:
-       - /opt/zeoserver/var/filestorage
+      - /opt/zeoserver/var/filestorage
+      - /opt/zeoserver/var/blobstorage
+      command: chown -R 500:500 /opt/zeoserver/var
 
 ## Upgrade
 
-    $ docker pull eeacms/zeoserver:latest
+    $ docker pull eeacms/zeoserver
 
 
 ## Supported environment variables ##
