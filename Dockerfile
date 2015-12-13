@@ -25,6 +25,7 @@ RUN python bootstrap.py -v 2.2.1 --setuptools-version=7.0 -c base.cfg && \
     ./bin/buildout -c base.cfg && \
     groupadd -g 500 zope-www && \
     useradd -u 500 -g 500 -m -s /bin/bash zope-www && \
+    gpasswd -a zope-www wheel && \
     chown -R 500:500 $ZEO_HOME
 
 VOLUME $ZEO_HOME/var/
